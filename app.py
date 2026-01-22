@@ -1,7 +1,8 @@
-import flet as ft
+import streamlit as st
 
 # ---------------------------------------------------------
-# 1. 模擬數據庫 (Mock Data)
+# 1. 模擬數據庫 (店家資料)
+# 您可以在這裡直接新增或修改店家資訊
 # ---------------------------------------------------------
 shops_data = [
     {
@@ -40,116 +41,99 @@ shops_data = [
         "is_amis_owned": True,
         "desc": "靠近海邊，洗完車可以看海，老闆很熱情。",
     },
+    {
+        "name": "光復糖廠旁快速洗車",
+        "location": "花蓮縣光復鄉",
+        "type": "機器洗車+人工擦拭",
+        "price": "💰 150 - 300",
+        "rating": 4.0,
+        "is_amis_owned": False,
+        "desc": "就在台9線旁邊，休息吃冰順便洗車。",
+    },
 ]
 
 # ---------------------------------------------------------
-# 2. App 主程式邏輯
+# 2. App 頁面設定與主程式
 # ---------------------------------------------------------
-def main(page: ft.Page):
-    # --- 修改點 1: 視窗標題 ---
-    page.title = "三一協會讓你車美美"
-    
-    page.theme_mode = ft.ThemeMode.LIGHT
-    page.padding = 20
-    page.window_width = 400
-    page.window_height = 800
-    
-    # 配色方案 (熱情紅 + 純淨白)
-    primary_color = ft.colors.RED_700
-    
-    # --- UI 元件生成函數 ---
-    def create_shop_card(shop):
-        badges = []
-        if shop["is_amis_owned"]:
-            badges.append(
-                ft.Container(
-                    content=ft.Text("族人經營", size=10, color=ft.colors.WHITE),
-                    bgcolor=ft.colors.RED_500,
-                    padding=5,
-                    border_radius=5,
-                )
-            )
+
+# 設定網頁標題、圖示與版面
+st.set_page_config(
+    page_title="三一協會讓你車美美",
+    page_icon="🚗",
+    layout="centered"
+)
+
+# --- 頂部標題區 ---
+st.title("三一協會讓你車美美 🚗")
+st.markdown("""
+<div style="background-color: #d32f2f; padding: 10px; border-radius: 5px; color: white; margin-bottom: 20px;">
+    <strong>Nga'ay ho! 歡迎回家</strong><br>
+    這是專屬三一協會族人的返鄉愛車特搜網
+</div>
+""", unsafe_allow_html=True)
+
+# --- 篩選控制區 ---
+st.write("### 👇 請問您要回哪裡？")
+col_filter, col_empty = st.columns([2, 1])
+with col_filter:
+    filter_option = st.radio(
+        "區域篩選",
+        ["全部顯示", "花蓮區", "台東區"],
+        horizontal=True,
+        label_visibility="collapsed"
+    )
+
+st.divider()
+
+# --- 資料篩選邏輯 ---
+filtered_shops = []
+for shop in shops_data:
+    if filter_option == "全部顯示":
+        filtered_shops.append(shop)
+    elif filter_option == "花蓮區" and "花蓮" in shop["location"]:
+        filtered_shops.append(shop)
+    elif filter_option == "台東區" and "台東" in shop["location"]:
+        filtered_shops.append(shop)
+
+# --- 顯示店家列表 ---
+st.caption(f"目前顯示 {len(filtered_shops)} 間店家")
+
+for shop in filtered_shops:
+    # 建立一個卡片容器
+    with st.container(border=True):
+        # 將卡片分為左(資訊)、右(評分與按鈕)兩欄
+        col1, col2 = st.columns([7, 3])
         
-        return ft.Card(
-            elevation=5,
-            content=ft.Container(
-                padding=15,
-                content=ft.Column([
-                    ft.Row([
-                        ft.Text(shop["name"], size=18, weight=ft.FontWeight.BOLD),
-                        ft.Icon(ft.icons.STAR, color=ft.colors.AMBER, size=16),
-                        ft.Text(str(shop["rating"]), size=14, weight=ft.FontWeight.BOLD),
-                    ]),
-                    ft.Row(badges),
-                    ft.Divider(),
-                    ft.Row([
-                        ft.Icon(ft.icons.LOCATION_ON, size=14, color=ft.colors.GREY),
-                        ft.Text(shop["location"], size=12, color=ft.colors.GREY_700),
-                    ]),
-                    ft.Row([
-                        ft.Icon(ft.icons.WATER_DROP, size=14, color=ft.colors.BLUE),
-                        ft.Text(shop["type"], size=12),
-                    ]),
-                    ft.Row([
-                        ft.Icon(ft.icons.CURRENCY_EXCHANGE, size=14, color=ft.colors.GREEN),
-                        ft.Text(shop["price"], size=12, weight=ft.FontWeight.BOLD),
-                    ]),
-                    ft.Container(height=5),
-                    ft.Text(shop["desc"], size=12, italic=True, color=ft.colors.GREY_600),
-                    ft.Container(height=10),
-                    ft.ElevatedButton(
-                        "預約 / 導航",
-                        icon=ft.icons.MAP,
-                        style=ft.ButtonStyle(color=ft.colors.WHITE, bgcolor=primary_color),
-                        on_click=lambda _: print(f"Navigating to {shop['name']}")
-                    )
-                ])
-            )
-        )
+        with col1:
+            # 店名
+            st.subheader(shop["name"])
+            
+            # 族人經營標籤 (如果是族人開的，顯示紅色標籤)
+            if shop["is_amis_owned"]:
+                st.markdown(":red[**🔴 三一協會族人經營**]")
+            
+            # 詳細資訊
+            st.text(f"📍 地點：{shop['location']}")
+            st.text(f"🛠️ 服務：{shop['type']}")
+            st.markdown(f"💵 **價格：{shop['price']}**")
+            st.caption(f"💬 特色：{shop['desc']}")
+            
+        with col2:
+            # 顯示評分
+            st.markdown(f"### ⭐ {shop['rating']}")
+            
+            # 導航按鈕 (生成 Google Maps 連結)
+            map_url = f"https://www.google.com/maps/search/?api=1&query={shop['name']}+{shop['location']}"
+            st.link_button("🚗 導航去", map_url, use_container_width=True)
 
-    # --- 頁面佈局 ---
-
-    # --- 修改點 2: APP 內部大標題 ---
-    header = ft.Container(
-        content=ft.Column([
-            ft.Text("三一協會讓你車美美", size=24, weight=ft.FontWeight.BOLD, color=primary_color),
-            ft.Text("Nga'ay ho! 返鄉愛車特搜網", size=14, color=ft.colors.GREY),
-        ]),
-        padding=ft.padding.only(bottom=20)
-    )
-
-    # 篩選按鈕區
-    def filter_shops(e):
-        filter_type = e.control.data
-        shop_list_view.controls.clear()
-        for shop in shops_data:
-            if filter_type == "ALL":
-                shop_list_view.controls.append(create_shop_card(shop))
-            elif filter_type == "Hualien" and "花蓮" in shop["location"]:
-                shop_list_view.controls.append(create_shop_card(shop))
-            elif filter_type == "Taitung" and "台東" in shop["location"]:
-                shop_list_view.controls.append(create_shop_card(shop))
-        page.update()
-
-    filter_row = ft.Row([
-        ft.ElevatedButton("全部", data="ALL", on_click=filter_shops),
-        ft.ElevatedButton("花蓮區", data="Hualien", on_click=filter_shops),
-        ft.ElevatedButton("台東區", data="Taitung", on_click=filter_shops),
-    ], alignment=ft.MainAxisAlignment.CENTER)
-
-    shop_list_view = ft.Column(scroll=ft.ScrollMode.AUTO, expand=True)
-
-    for shop in shops_data:
-        shop_list_view.controls.append(create_shop_card(shop))
-
-    nav_bar = ft.NavigationBar(
-        destinations=[
-            ft.NavigationDestination(icon=ft.icons.HOME, label="首頁"),
-            ft.NavigationDestination(icon=ft.icons.FAVORITE, label="收藏"),
-            ft.NavigationDestination(icon=ft.icons.PERSON, label="協會專區"),
-        ]
-    )
-
-    page.add(header, filter_row, ft.Divider(), shop_list_view, nav_bar)
-
-ft.app(target=main)
+# --- 底部版權區 ---
+st.divider()
+st.markdown(
+    """
+    <div style='text-align: center; color: grey; font-size: 12px;'>
+        桃園三一協會 Taoyuan Sanyi Association © 2026<br>
+        Designed for Pangcah Return
+    </div>
+    """,
+    unsafe_allow_html=True
+)
