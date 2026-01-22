@@ -255,6 +255,7 @@ else:
 
 # --- 底部 ---
 st.markdown(
-    "<div style='text-align: center; color: #888; margin-top: 30px;'>桃園三一協會 Taoyuan Sanyi Association © 2026</div>", 
+    "<div style='text-align: center; color: #888; margin-top: 30px;'>桃園三一協會 Taoyuan 31 Association © 2026</div>", 
     unsafe_allow_html=True
 )
+
