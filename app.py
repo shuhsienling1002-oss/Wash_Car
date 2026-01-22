@@ -179,7 +179,7 @@ shops_data = [
 st.set_page_config(page_title="桃園全區 - 返鄉愛車特搜", page_icon="🚙", layout="centered")
 
 # 標題
-st.title("🚙 桃園三一協會：全區愛車特搜")
+st.title("🚙 三一協會：返鄉前去洗車")
 st.markdown(
     """
     <div style="background-color: #0277BD; padding: 15px; border-radius: 10px; color: white; margin-bottom: 20px;">
@@ -257,3 +257,4 @@ st.markdown(
     "<div style='text-align: center; color: #888;'>桃園三一協會 Taoyuan Sanyi Association © 2026<br>照顧每一位族人的愛車</div>", 
     unsafe_allow_html=True
 )
+
