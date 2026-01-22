@@ -1,8 +1,8 @@
 import streamlit as st
 
-# ---------------------------------------------------------
-# 1. 終極海量資料庫 (包含連鎖、自助、加油站、在地名店)
-# ---------------------------------------------------------
+# ==========================================
+# 1. 終極海量資料庫 (50+ 間店家，完全保留)
+# ==========================================
 shops_data = [
     # ================= 新屋區 (Xinwu) - 偏鄉救星 =================
     {"name": "台灣中油 (新屋站)", "district": "新屋區", "location": "新屋區中山路366號", "type": "加油站洗車", "rating": 4.0, "desc": "新屋市區最穩的選擇，機器洗很快。"},
@@ -68,47 +68,50 @@ shops_data = [
     {"name": "大園市區自助洗", "district": "大園區", "location": "大園區中山北路", "type": "自助洗車", "rating": 3.8, "desc": "機場工作人員常來。"},
 ]
 
-# ---------------------------------------------------------
-# 2. App 主程式邏輯
-# ---------------------------------------------------------
-st.set_page_config(page_title="三一協會帶你返鄉前洗車去", page_icon="🚗", layout="wide")
+# ==========================================
+# 2. App 主程式 (手機單頁優化版)
+# ==========================================
+# layout="centered" 讓內容在手機上集中，不會忽大忽小
+st.set_page_config(page_title="三一協會帶你返鄉前洗車去", page_icon="🚗", layout="centered")
 
-# 頂部 Header
+# --- 標題區 ---
 st.title("🚗 三一協會帶你返鄉前洗車去")
+
 st.markdown(
     """
     <div style="background-color: #D32F2F; padding: 15px; border-radius: 10px; color: white; margin-bottom: 20px;">
         <strong>⚠️ 過年警報：洗車場即將大爆滿！</strong><br>
-        為了分散人流，我們搜集了全桃園 13 區、超過 50 間店家。<br>
-        新屋、觀音的族人不用擔心，連加油站洗車都幫您列出來了！
+        請盡早卡位！我們幫您整理了全桃園 13 區、50+ 間優質店家。
     </div>
     """, 
     unsafe_allow_html=True
 )
 
-# --- 側邊欄篩選 ---
-with st.sidebar:
-    st.header("🔍 快速篩選")
-    
-    # 1. 區域篩選
-    all_districts = sorted(list(set([shop["district"] for shop in shops_data])))
-    all_districts.insert(0, "全部顯示")
-    selected_area = st.selectbox("居住區域", all_districts)
-    
-    st.divider()
-    
-    # 2. 類型篩選 (重要！因為店太多了)
-    type_filter = st.radio(
-        "想找哪種店？",
-        ["所有類型", "精緻護理 (要預約)", "自助洗車 (24H)", "加油站洗車 (快速)"]
-    )
-    
-    st.divider()
-    st.info("💡 **小撇步**：過年前一週「精緻護理」通常約滿，建議改去「自助洗車」或「加油站」比較快喔！")
+# --- 篩選區 (直接放在主頁面，不用側邊欄) ---
+st.markdown("### 1️⃣ 選擇區域")
+all_districts = sorted(list(set([shop["district"] for shop in shops_data])))
+all_districts.insert(0, "全部顯示")
+# Selectbox 在手機上會變成原生的下拉選單，最好用
+selected_area = st.selectbox("請選擇您居住的區域", all_districts, label_visibility="collapsed")
 
-# --- 主畫面邏輯 ---
+st.write("") # 空行
 
-# 篩選資料
+st.markdown("### 2️⃣ 想找哪種店？")
+# Pills (膠囊按鈕) 是手機上最好按的設計
+type_filter = st.pills(
+    "類型篩選",
+    ["所有類型", "精緻護理 (要預約)", "自助洗車 (24H)", "加油站洗車 (快速)"],
+    default="所有類型",
+    label_visibility="collapsed"
+)
+
+# 小撇步 (放在篩選器下方，醒目)
+st.info("💡 **小撇步**：過年前一週「精緻護理」通常約滿，建議改去「自助洗車」或「加油站」比較快喔！")
+
+st.divider()
+
+# --- 邏輯處理 ---
+
 filtered_shops = []
 for shop in shops_data:
     # 區域過濾
@@ -127,62 +130,47 @@ for shop in shops_data:
 
 # --- 顯示結果 ---
 
-# 鄰近推薦邏輯 (針對偏鄉)
+# 鄰近推薦 (偏鄉救星)
 nearby_map = {"新屋區": "楊梅區", "觀音區": "中壢區", "大園區": "蘆竹區", "復興區": "大溪區"}
 
 if selected_area in nearby_map:
     neighbor = nearby_map[selected_area]
-    st.warning(f"🔔 **{selected_area} 的店家較少**，如果這裡排隊太長，建議直接殺去 **【{neighbor}】**，選擇會多很多！")
+    st.warning(f"🔔 **{selected_area} 店家較少**，若排隊太長，建議殺去 **【{neighbor}】**，選擇多很多！")
 
-st.subheader(f"📍 {selected_area}：找到 {len(filtered_shops)} 間推薦")
-
-# 使用 Grid 排版 (每行顯示 2 個，比較好看)
-row1 = st.columns(2)
-row2 = st.columns(2)
-row3 = st.columns(2)
-rows = [row1, row2, row3] * 20 # 產生足夠多的行數
-
-for i, shop in enumerate(filtered_shops):
-    # 計算要放在哪一欄
-    col = rows[i // 2][i % 2]
+if not filtered_shops:
+    st.error("⚠️ 哎呀！這個條件下沒有店家，請試試看別的類型。")
+else:
+    st.caption(f"📍 {selected_area}：共找到 {len(filtered_shops)} 間")
     
-    with col:
+    # 手機版直接用單欄顯示，卡片一張一張滑最清楚
+    for shop in filtered_shops:
         with st.container(border=True):
-            # 標題區：加上圖示區分
+            # 標題與類型圖示
             icon = "🚗"
             if "自助" in shop["type"]: icon = "🪙"
             if "加油站" in shop["type"]: icon = "⛽"
             
-            st.markdown(f"### {icon} {shop['name']}")
-            
-            # 標籤區
-            st.caption(f"📍 {shop['district']} | {shop['type']}")
-            
-            # 描述與評分
-            c1, c2 = st.columns([7, 3])
+            c1, c2 = st.columns([8, 2])
             with c1:
-                st.write(f"💬 {shop['desc']}")
+                st.subheader(f"{icon} {shop['name']}")
+                st.caption(f"📍 {shop['district']} | {shop['type']}")
             with c2:
-                st.markdown(f"<h3 style='color:#F57C00; margin:0;'>★{shop['rating']}</h3>", unsafe_allow_html=True)
+                st.markdown(f"<h3 style='color:#F57C00; text-align:right;'>★{shop['rating']}</h3>", unsafe_allow_html=True)
             
-            # 導航按鈕
+            st.write(f"💬 {shop['desc']}")
+            
+            # 導航按鈕 (滿版寬度，手機好按)
             map_url = f"https://www.google.com/maps/search/?api=1&query={shop['name']}+{shop['location']}"
             
-            # 根據類型給不同顏色的按鈕
             if "自助" in shop["type"]:
-                st.link_button("🪙 導航 (24H)", map_url, use_container_width=True)
+                st.link_button("🪙 導航去 (24H)", map_url, use_container_width=True)
             elif "加油站" in shop["type"]:
-                st.link_button("⛽ 導航 (免預約)", map_url, use_container_width=True)
+                st.link_button("⛽ 導航去 (免預約)", map_url, use_container_width=True)
             else:
-                st.link_button("📅 導航 (建議預約)", map_url, use_container_width=True, type="primary")
+                st.link_button("📅 導航去 (建議預約)", map_url, use_container_width=True, type="primary")
 
-# --- 查無資料時 ---
-if not filtered_shops:
-    st.error("⚠️ 哎呀！這個篩選條件下目前沒有資料，請試試看別的類型。")
-
-# --- 底部版權 ---
-st.divider()
+# --- 底部 ---
 st.markdown(
-    "<div style='text-align: center; color: #888;'>桃園三一協會 Taoyuan Sanyi Association © 2026<br>祝大家返鄉平安，車美美，人帥帥！</div>", 
+    "<div style='text-align: center; color: #888; margin-top: 30px;'>桃園三一協會 Taoyuan Sanyi Association © 2026</div>", 
     unsafe_allow_html=True
 )
