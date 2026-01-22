@@ -1,138 +1,141 @@
 import streamlit as st
 
 # ---------------------------------------------------------
-# 1. 模擬數據庫 (店家資料)
-# 您可以在這裡直接新增或修改店家資訊
+# 1. 桃園在地店家資料庫 (模擬數據)
+# 這裡收錄了桃園區、中壢、八德等地的美容店
 # ---------------------------------------------------------
 shops_data = [
     {
-        "name": "吉安阿美精緻洗車",
-        "location": "花蓮縣吉安鄉",
-        "type": "洗車+打蠟",
-        "price": "💰 300 - 800",
+        "name": "桃園藝文 IPO 頂級汽車美容",
+        "district": "桃園區",
+        "location": "桃園區大興西路二段",
+        "type": "高階鍍膜/深層護理",
+        "price": "💰 2000 - 8000",
+        "rating": 4.9,
+        "is_amis_owned": False,
+        "desc": "藝文特區名店，適合開雙B回鄉的族人，建議提前兩週預約。",
+    },
+    {
+        "name": "中壢後站阿美洗車坊",
+        "district": "中壢區",
+        "location": "中壢區健行路",
+        "type": "精緻洗車+打蠟",
+        "price": "💰 400 - 1200",
         "rating": 4.8,
         "is_amis_owned": True,
-        "desc": "老闆是吉安部落的，回鄉族人打9折！手路很細。",
+        "desc": "老闆是我們三一協會的弟兄！族人去洗車多送水鍍膜，手路很乾淨。",
     },
     {
-        "name": "台東馬蘭光澤美容",
-        "location": "台東市更生路",
-        "type": "深層美容/鍍膜",
-        "price": "💰 1500 - 4000",
-        "rating": 4.5,
-        "is_amis_owned": False,
-        "desc": "設備很新，有休息室可以喝咖啡。",
-    },
-    {
-        "name": "玉里部落自助洗車",
-        "location": "花蓮縣玉里鎮",
-        "type": "自助洗車",
-        "price": "💰 50 - 100",
-        "rating": 4.2,
+        "name": "八德介壽路自助洗車場",
+        "district": "八德區",
+        "location": "八德區介壽路一段",
+        "type": "24H 自助洗車",
+        "price": "💰 10 - 100",
+        "rating": 4.3,
         "is_amis_owned": True,
-        "desc": "場地大，適合過年返鄉大家一起來洗。",
+        "desc": "場地超大，適合過年前大家約好一起去洗車聊天，老闆會放阿美族歌。",
     },
     {
-        "name": "成功海岸線車體護理",
-        "location": "台東縣成功鎮",
-        "type": "洗車+內裝",
-        "price": "💰 500 - 1200",
-        "rating": 4.9,
-        "is_amis_owned": True,
-        "desc": "靠近海邊，洗完車可以看海，老闆很熱情。",
-    },
-    {
-        "name": "光復糖廠旁快速洗車",
-        "location": "花蓮縣光復鄉",
-        "type": "機器洗車+人工擦拭",
-        "price": "💰 150 - 300",
-        "rating": 4.0,
+        "name": "龜山林口 G'ZOX 鍍膜中心",
+        "district": "龜山區",
+        "location": "龜山區文化三路",
+        "type": "日本頂級鍍膜",
+        "price": "💰 3000+",
+        "rating": 4.7,
         "is_amis_owned": False,
-        "desc": "就在台9線旁邊，休息吃冰順便洗車。",
+        "desc": "效果很持久，跑蘇花公路不怕髒，回來沖一沖就乾淨。",
+    },
+    {
+        "name": "平鎮環南路快速美容",
+        "district": "平鎮區",
+        "location": "平鎮區環南路",
+        "type": "快速洗車+內裝",
+        "price": "💰 300 - 600",
+        "rating": 4.1,
+        "is_amis_owned": False,
+        "desc": "速度快，適合趕著要回花蓮、沒時間等的族人。",
     },
 ]
 
 # ---------------------------------------------------------
-# 2. App 頁面設定與主程式
+# 2. App 主程式 (Streamlit)
 # ---------------------------------------------------------
 
-# 設定網頁標題、圖示與版面
+# 設定頁面
 st.set_page_config(
-    page_title="三一協會讓你車美美",
-    page_icon="🚗",
+    page_title="三一協會：返鄉愛車護理",
+    page_icon="✨",
     layout="centered"
 )
 
-# --- 頂部標題區 ---
-st.title("三一協會讓你車美美 🚗")
+# --- 頂部歡迎區 ---
+st.title("三一協會：返鄉愛車護理 ✨")
 st.markdown("""
-<div style="background-color: #d32f2f; padding: 10px; border-radius: 5px; color: white; margin-bottom: 20px;">
-    <strong>Nga'ay ho! 歡迎回家</strong><br>
-    這是專屬三一協會族人的返鄉愛車特搜網
+<div style="background-color: #B71C1C; padding: 15px; border-radius: 10px; color: white; margin-bottom: 20px;">
+    <h3 style='margin:0; color:white;'>Nga'ay ho! 準備回花東了嗎？</h3>
+    <p style='margin-top:5px;'>過年返鄉前，在桃園先把車子洗得亮亮的，開回部落最有面子！</p>
 </div>
 """, unsafe_allow_html=True)
 
-# --- 篩選控制區 ---
-st.write("### 👇 請問您要回哪裡？")
-col_filter, col_empty = st.columns([2, 1])
-with col_filter:
-    filter_option = st.radio(
-        "區域篩選",
-        ["全部顯示", "花蓮區", "台東區"],
-        horizontal=True,
-        label_visibility="collapsed"
-    )
+# --- 側邊欄或頂部篩選 ---
+st.write("### 👇 您住在桃園哪裡？")
+
+# 建立篩選按鈕
+area_filter = st.radio(
+    "選擇區域",
+    ["全部顯示", "桃園區", "中壢區", "八德/平鎮", "龜山/其他"],
+    horizontal=True,
+    label_visibility="collapsed"
+)
 
 st.divider()
 
 # --- 資料篩選邏輯 ---
 filtered_shops = []
 for shop in shops_data:
-    if filter_option == "全部顯示":
+    if area_filter == "全部顯示":
         filtered_shops.append(shop)
-    elif filter_option == "花蓮區" and "花蓮" in shop["location"]:
+    elif area_filter == "桃園區" and shop["district"] == "桃園區":
         filtered_shops.append(shop)
-    elif filter_option == "台東區" and "台東" in shop["location"]:
+    elif area_filter == "中壢區" and shop["district"] == "中壢區":
+        filtered_shops.append(shop)
+    elif area_filter == "八德/平鎮" and shop["district"] in ["八德區", "平鎮區"]:
+        filtered_shops.append(shop)
+    elif area_filter == "龜山/其他" and shop["district"] not in ["桃園區", "中壢區", "八德區", "平鎮區"]:
         filtered_shops.append(shop)
 
-# --- 顯示店家列表 ---
-st.caption(f"目前顯示 {len(filtered_shops)} 間店家")
+# --- 顯示結果 ---
+st.info(f"🔍 在 {area_filter} 幫您找到 {len(filtered_shops)} 間推薦店家")
 
 for shop in filtered_shops:
-    # 建立一個卡片容器
     with st.container(border=True):
-        # 將卡片分為左(資訊)、右(評分與按鈕)兩欄
         col1, col2 = st.columns([7, 3])
         
         with col1:
-            # 店名
             st.subheader(shop["name"])
             
-            # 族人經營標籤 (如果是族人開的，顯示紅色標籤)
+            # 族人經營標籤
             if shop["is_amis_owned"]:
-                st.markdown(":red[**🔴 三一協會族人經營**]")
+                st.markdown(":red[**🔴 三一協會族人經營 (支持自己人!)**]")
             
-            # 詳細資訊
-            st.text(f"📍 地點：{shop['location']}")
-            st.text(f"🛠️ 服務：{shop['type']}")
-            st.markdown(f"💵 **價格：{shop['price']}**")
-            st.caption(f"💬 特色：{shop['desc']}")
+            st.text(f"📍 {shop['location']} ({shop['district']})")
+            st.markdown(f"🛠️ **{shop['type']}**")
+            st.markdown(f"💵 **{shop['price']}**")
+            st.caption(f"💡 {shop['desc']}")
             
         with col2:
-            # 顯示評分
-            st.markdown(f"### ⭐ {shop['rating']}")
-            
-            # 導航按鈕 (生成 Google Maps 連結)
-            map_url = f"https://www.google.com/maps/search/?api=1&query={shop['name']}+{shop['location']}"
+            st.markdown(f"## ⭐ {shop['rating']}")
+            # 導航按鈕
+            map_url = f"https://www.google.com/maps/search/?api=1&query={shop['name']}+桃園"
             st.link_button("🚗 導航去", map_url, use_container_width=True)
 
-# --- 底部版權區 ---
+# --- 底部提示 ---
 st.divider()
 st.markdown(
     """
-    <div style='text-align: center; color: grey; font-size: 12px;'>
-        桃園三一協會 Taoyuan Sanyi Association © 2026<br>
-        Designed for Pangcah Return
+    <div style='text-align: center; color: grey; font-size: 13px;'>
+        ⚠️ <strong>過年提醒：</strong> 春節前一週通常會漲價或排隊，建議提早預約！<br>
+        桃園三一協會 Taoyuan Sanyi Association © 2026
     </div>
     """,
     unsafe_allow_html=True
